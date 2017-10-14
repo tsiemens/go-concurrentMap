@@ -77,10 +77,6 @@ type ConcurrentMap struct {
 	eng        unsafe.Pointer
 
 	/**
-	 * Kind of Reflect value for key
-	 */
-	kind unsafe.Pointer
-	/**
 	 * Mask value for indexing into segments. The upper bits of a
 	 * key's hash code are used to choose the segment.
 	 */
@@ -208,9 +204,6 @@ func (this *ConcurrentMap) Get(key interface{}) (value interface{}, err error) {
 	if isNil(key) {
 		return nil, NilKeyError
 	}
-	//if atomic.LoadPointer(&this.kind) == nil {
-	//	return nil, nil
-	//}
 	if hash, e := hashKey(key, this, false); e != nil {
 		err = e
 	} else {
@@ -231,10 +224,6 @@ func (this *ConcurrentMap) ContainsKey(key interface{}) (found bool, err error) 
 	if isNil(key) {
 		return false, NilKeyError
 	}
-	if atomic.LoadPointer(&this.kind) == nil {
-		return false, nil
-	}
-
 	if hash, e := hashKey(key, this, false); e != nil {
 		err = e
 	} else {

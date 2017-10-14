@@ -71,6 +71,18 @@ func testConcurrentMap(t *testing.T, datas map[interface{}]interface{}) {
 
 	m := NewConcurrentMap()
 
+	//test Get when not present
+	val, err := m.Get(firstKey)
+	if val != nil || err != nil {
+		t.Errorf("Get %v, return %v, %v, want nil, nil", firstKey, val, err)
+	}
+
+	// test ContainsKey when not present
+	found, err := m.ContainsKey(firstKey)
+	if found || err != nil {
+		t.Errorf("ContainsKey %v, return %v, %v, want false, nil", firstKey, found, err)
+	}
+
 	//test Put first key-value pair
 	previou, err := m.Put(firstKey, firstVal)
 	if previou != nil || err != nil {
@@ -91,9 +103,15 @@ func testConcurrentMap(t *testing.T, datas map[interface{}]interface{}) {
 	}
 
 	//test Get
-	val, err := m.Get(firstKey)
+	val, err = m.Get(firstKey)
 	if val != firstVal || err != nil {
 		t.Errorf("Get %v, return %v, %v, want %v, nil", firstKey, val, err, firstVal)
+	}
+
+	// test ContainsKey
+	found, err = m.ContainsKey(firstKey)
+	if !found || err != nil {
+		t.Errorf("ContainsKey %v, return %v, %v, want true, nil", firstKey, found, err)
 	}
 
 	//test Size
@@ -357,7 +375,7 @@ func TestUpdate(t *testing.T) {
 	if old == nil || err != nil {
 		t.Errorf("Update %v, nil, return %#v, %v, want %v, nil", u3.Name, old, err, u3)
 	}
-	
+
 	//Getting value by "stone" returns nil
 	v, err = cm.Get(u3.Name)
 	if v != nil || err != nil {
@@ -970,6 +988,9 @@ func TestMapIterOrder(t *testing.T) {
 
 /*----------------test concurrent-------------------------------*/
 func TestConcurrent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	numCpu := runtime.NumCPU()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(numCpu))
 	writeN := 2*numCpu + 1
